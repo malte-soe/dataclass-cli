@@ -1,6 +1,6 @@
 import argparse
 import dataclasses
-from typing import Dict, Union, List
+from typing import Dict, List, Union
 
 __CLASSES__: List[str] = []
 __PARSED_ARGS__: Dict[str, Union[int, str]] = {}
