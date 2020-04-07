@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="dc-cli",  # Replace with your own username
+    name="dc-cli",
     version="0.0.1",
     author="Malte Soennichsen",
     author_email="malte-soe@users.noreply.github.com",

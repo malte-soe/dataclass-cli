@@ -13,9 +13,7 @@ def get_parsed_values(name):
 
     prefix_length = len(name) + 1
     return {
-        k[prefix_length:]: v
-        for k, v in __PARSED_ARGS__.items()
-        if k.startswith(name)
+        k[prefix_length:]: v for k, v in __PARSED_ARGS__.items() if k.startswith(name)
     }
 
 
