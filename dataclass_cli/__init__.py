@@ -1,1 +1,1 @@
-from dataclass_cli.parser import cli
+from dataclass_cli.parser import add

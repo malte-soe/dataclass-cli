@@ -2,36 +2,37 @@ import argparse
 import dataclasses
 from typing import Dict, List, Union
 
-__CLASSES__: List[str] = []
-__PARSED_ARGS__: Dict[str, Union[int, str]] = {}
-__PARSER__ = argparse.ArgumentParser()
 
-
-def get_parsed_values(name):
-    if not __PARSED_ARGS__:
-        __PARSED_ARGS__.update(vars(__PARSER__.parse_args()))
-
-    prefix_length = len(name) + 1
-    return {
-        k[prefix_length:]: v for k, v in __PARSED_ARGS__.items() if k.startswith(name)
-    }
-
-
-def cli(cls):
+def add(
+    cls,
+    *,
+    _classes: Dict[str, List[str]] = {},
+    _parsed_args: Dict[str, Union[int, str]] = {},
+    _parser=argparse.ArgumentParser(),
+):
     assert dataclasses.is_dataclass(cls)
     name = cls.__name__.lower()
-    assert name not in __CLASSES__
-    __CLASSES__.append(name)
+    assert name not in _classes
+    _classes[name] = [arg.name for arg in dataclasses.fields(cls)]
+    group = _parser.add_argument_group(name)
     for field in dataclasses.fields(cls):
-        __PARSER__.add_argument(
-            f"--{name}_{field.name}", type=field.type, default=field.default
+        group.add_argument(
+            f"--{name}_{field.name}", type=field.type, default=field.default,
         )
 
-    old_init = cls.__init__
+    original_init = cls.__init__
 
     def __init__(self):
-        args = get_parsed_values(name)
-        old_init(self, **args)
+        if not _parsed_args:
+            _parsed_args.update(vars(_parser.parse_args()))
+
+        cli_args = [f"{name}_{arg}" for arg in _classes[name]]
+        args = {
+            arg_name: _parsed_args[cli_arg]
+            for arg_name, cli_arg in zip(_classes[name], cli_args)
+        }
+
+        original_init(self, **args)
 
     cls.__init__ = __init__
 
