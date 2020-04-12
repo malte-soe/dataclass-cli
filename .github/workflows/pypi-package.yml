@@ -18,7 +18,4 @@ jobs:
     - name: Uploading the distribution archives
       run : |
         python -m pip install --upgrade twine
-        python -m twine upload\
-          -u ${{ secrets.TWINE_USERNAME }}\
-          -p ${{ secrets.TWINE_PASSWORD }}\
-          dist/*
+        python -m twine upload -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASSWORD }} dist/*
