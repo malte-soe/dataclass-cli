@@ -1,6 +1,12 @@
 import argparse
 import dataclasses
+import enum
 from typing import Dict, List, Union
+
+
+class Options(str, enum.Enum):
+    POSSIBLE_VALUES = enum.auto()
+    HELP_TEXT = enum.auto()
 
 
 def add(
@@ -11,13 +17,19 @@ def add(
     _parser=argparse.ArgumentParser(),
 ):
     assert dataclasses.is_dataclass(cls)
+
     name = cls.__name__.lower()
     assert name not in _classes
     _classes[name] = [arg.name for arg in dataclasses.fields(cls)]
+
     group = _parser.add_argument_group(name)
     for field in dataclasses.fields(cls):
         group.add_argument(
-            f"--{name}_{field.name}", type=field.type, default=field.default,
+            f"--{name}_{field.name}",
+            type=field.type,
+            default=field.default,
+            choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
+            help=field.metadata.get(Options.HELP_TEXT, None),
         )
 
     original_init = cls.__init__
