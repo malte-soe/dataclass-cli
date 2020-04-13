@@ -27,7 +27,8 @@ def add(
         group.add_argument(
             f"--{name}_{field.name}",
             type=field.type,
-            default=field.default,
+            default=None if field.default is dataclasses.MISSING else field.default,
+            required=field.default is dataclasses.MISSING,
             choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
             help=field.metadata.get(Options.HELP_TEXT, None),
         )
