@@ -119,3 +119,17 @@ class TestDcCli(unittest.TestCase):
             _ = DataclassWithHelp()
 
         self.assertIn(help_text, fake_out.getvalue())
+
+    def test_no_default_value(self):
+        @self.add
+        @dataclass
+        class DataclassWithNoDefault:
+            number: int
+
+        testargs = f"test.py".split()
+        with mock.patch("sys.argv", testargs), self.assertRaises(
+            SystemExit
+        ), mock.patch("sys.stderr", new=StringIO()) as fake_out:
+            _ = DataclassWithNoDefault()
+
+        self.assertIn("the following arguments are required", fake_out.getvalue())
