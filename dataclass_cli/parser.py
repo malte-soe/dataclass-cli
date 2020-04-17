@@ -1,6 +1,7 @@
 import argparse
 import dataclasses
 import enum
+from functools import partial
 from typing import Dict, List, Union
 
 
@@ -9,16 +10,23 @@ class Options(str, enum.Enum):
     HELP_TEXT = enum.auto()
 
 
-def add(
+def add(cls=None, *, name=None, **kwargs):
+    if cls is None:
+        return partial(_add, name=name, **kwargs)
+    return _add(cls, name=name, **kwargs)
+
+
+def _add(
     cls,
     *,
+    name: str = "",
     _classes: Dict[str, List[str]] = {},
     _parsed_args: Dict[str, Union[int, str]] = {},
     _parser=argparse.ArgumentParser(),
 ):
     assert dataclasses.is_dataclass(cls)
 
-    name = cls.__name__.lower()
+    name = name or cls.__name__.lower()
     assert name not in _classes
     _classes[name] = [arg.name for arg in dataclasses.fields(cls)]
 
