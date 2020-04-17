@@ -133,3 +133,17 @@ class TestDcCli(unittest.TestCase):
             _ = DataclassWithNoDefault()
 
         self.assertIn("the following arguments are required", fake_out.getvalue())
+
+    def test_custom_name(self):
+        name = "custom42"
+        number = 42
+
+        @self.add(name=name)
+        @dataclass
+        class Dataclass:
+            number: int
+
+        testargs = f"test.py --{name}_number {number}".split()
+        with mock.patch("sys.argv", testargs):
+            dc = Dataclass()
+        self.assertEqual(number, dc.number)
