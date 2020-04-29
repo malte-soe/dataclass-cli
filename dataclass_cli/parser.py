@@ -43,7 +43,7 @@ def _add(
 
     original_init = cls.__init__
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         if not _parsed_args:
             _parsed_args.update(vars(_parser.parse_args()))
 
@@ -52,6 +52,7 @@ def _add(
             arg_name: _parsed_args[cli_arg]
             for arg_name, cli_arg in zip(_classes[name], cli_args)
         }
+        args.update(kwargs)
 
         original_init(self, **args)
 

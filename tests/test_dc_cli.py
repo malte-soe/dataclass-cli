@@ -147,3 +147,18 @@ class TestDcCli(unittest.TestCase):
         with mock.patch("sys.argv", testargs):
             dc = Dataclass()
         self.assertEqual(number, dc.number)
+
+    def test_overwrite_cli_args(self):
+        name = "custom42"
+        number = 42
+        number_cli = 1337
+
+        @self.add(name=name)
+        @dataclass
+        class Dataclass:
+            number: int
+
+        testargs = f"test.py --{name}_number {number_cli}".split()
+        with mock.patch("sys.argv", testargs):
+            dc = Dataclass(number=number)
+        self.assertEqual(number, dc.number)
