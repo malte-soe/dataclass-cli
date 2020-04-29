@@ -11,10 +11,7 @@ import dataclass_cli
 class TestDcCli(unittest.TestCase):
     def setUp(self):
         self.add = partial(
-            dataclass_cli.add,
-            _classes={},
-            _parsed_args={},
-            _parser=argparse.ArgumentParser(),
+            dataclass_cli.add, _classes={}, _parser=argparse.ArgumentParser(),
         )
 
     def tearDown(self):

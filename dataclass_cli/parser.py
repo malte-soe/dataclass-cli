@@ -1,6 +1,7 @@
 import argparse
 import dataclasses
 import enum
+import logging
 from functools import partial
 from typing import Dict, List, Union
 
@@ -21,7 +22,6 @@ def _add(
     *,
     name: str = "",
     _classes: Dict[str, List[str]] = {},
-    _parsed_args: Dict[str, Union[int, str]] = {},
     _parser=argparse.ArgumentParser(),
 ):
     assert dataclasses.is_dataclass(cls)
@@ -44,8 +44,7 @@ def _add(
     original_init = cls.__init__
 
     def __init__(self, **kwargs):
-        if not _parsed_args:
-            _parsed_args.update(vars(_parser.parse_args()))
+        _parsed_args = vars(_parser.parse_args())
 
         cli_args = [f"{name}_{arg}" for arg in _classes[name]]
         args = {
