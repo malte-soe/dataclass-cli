@@ -2,13 +2,13 @@ import argparse
 import dataclasses
 import enum
 import logging
+import typing
 from functools import partial
-from typing import Dict, List, Union
 
 
 class Options(str, enum.Enum):
-    POSSIBLE_VALUES = enum.auto()
-    HELP_TEXT = enum.auto()
+    POSSIBLE_VALUES = "possible_values"
+    HELP_TEXT = "help_text"
 
 
 def add(cls=None, *, name=None, **kwargs):
@@ -17,29 +17,70 @@ def add(cls=None, *, name=None, **kwargs):
     return _add(cls, name=name, **kwargs)
 
 
+def _add_type_basic(
+    group: argparse._ArgumentGroup, field: dataclasses.Field, name: str
+):
+    group.add_argument(
+        f"--{name}_{field.name}",
+        type=field.type,
+        default=None if field.default is dataclasses.MISSING else field.default,
+        required=field.default is dataclasses.MISSING,
+        choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
+        help=field.metadata.get(Options.HELP_TEXT, None),
+    )
+
+
+def _add_type_list(group: argparse._ArgumentGroup, field: dataclasses.Field, name: str):
+    group.add_argument(
+        f"--{name}_{field.name}",
+        type=typing.get_args(field.type)[0],
+        default=None
+        if field.default_factory is dataclasses.MISSING  # type: ignore
+        else field.default_factory(),  # type: ignore
+        required=field.default_factory is dataclasses.MISSING,  # type: ignore
+        choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
+        help=field.metadata.get(Options.HELP_TEXT, None),
+        nargs="*",
+    )
+
+
+_add_argument_: typing.Dict[
+    type, typing.Callable[[argparse._ArgumentGroup, dataclasses.Field, str], None]
+] = {
+    int: _add_type_basic,
+    float: _add_type_basic,
+    str: _add_type_basic,
+    typing.List[int]: _add_type_list,
+    typing.List[float]: _add_type_list,
+    typing.List[str]: _add_type_list,
+}
+
+
 def _add(
     cls,
     *,
     name: str = "",
-    _classes: Dict[str, List[str]] = {},
+    _classes: typing.Dict[str, typing.List[str]] = {},
     _parser=argparse.ArgumentParser(),
 ):
     assert dataclasses.is_dataclass(cls)
 
-    name = name or cls.__name__.lower()
+    name = name or cls.__name__
+    name = name.lower()
     assert name not in _classes
     _classes[name] = [arg.name for arg in dataclasses.fields(cls)]
 
     group = _parser.add_argument_group(name)
     for field in dataclasses.fields(cls):
-        group.add_argument(
-            f"--{name}_{field.name}",
-            type=field.type,
-            default=None if field.default is dataclasses.MISSING else field.default,
-            required=field.default is dataclasses.MISSING,
-            choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
-            help=field.metadata.get(Options.HELP_TEXT, None),
-        )
+        _add_argument_[field.type](group, field, name)
+        # group.add_argument(
+        #     f"--{name}_{field.name}",
+        #     type=field.type,
+        #     default=None if field.default is dataclasses.MISSING else field.default,
+        #     required=field.default is dataclasses.MISSING,
+        #     choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
+        #     help=field.metadata.get(Options.HELP_TEXT, None),
+        # )
 
     original_init = cls.__init__
 

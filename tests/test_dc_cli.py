@@ -1,4 +1,5 @@
 import argparse
+import typing
 import unittest
 from dataclasses import dataclass, field
 from functools import partial
@@ -159,3 +160,83 @@ class TestDcCli(unittest.TestCase):
         with mock.patch("sys.argv", testargs):
             dc = Dataclass(number=number)
         self.assertEqual(number, dc.number)
+
+    def test_default_list_arg(self):
+        testing_lists = [[], [1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        for idx, test_list in enumerate(testing_lists):
+
+            element_type = int if (len(test_list) == 0) else type(test_list[0])
+
+            @self.add(name=f"dataclass_{idx}")
+            @dataclass
+            class Dataclass:
+                args: typing.List[element_type] = field(
+                    default_factory=lambda: test_list
+                )
+
+            testargs = [f"test.py"]
+            with mock.patch("sys.argv", testargs):
+                dc = Dataclass()
+            self.assertEqual(test_list, dc.args)
+
+    def test_list_arg(self):
+        testing_lists = [[1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        for idx, test_list in enumerate(testing_lists):
+
+            element_type = int if (len(test_list) == 0) else type(test_list[0])
+            name = f"dataclass_{idx}"
+
+            @self.add(name=name)
+            @dataclass
+            class Dataclass:
+                args: typing.List[element_type] = field(default_factory=lambda: [])
+
+            testargs = [f"test.py", f"--{name}_args"]
+            testargs.extend(map(str, test_list))
+            with mock.patch("sys.argv", testargs):
+                dc = Dataclass()
+            self.assertEqual(test_list, dc.args)
+
+    def test_possible_values_list_arg(self):
+        testing_lists = [[1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        for idx, test_list in enumerate(testing_lists):
+
+            element_type = int if (len(test_list) == 0) else type(test_list[0])
+            name = f"dataclass_{idx}"
+
+            @self.add(name=name)
+            @dataclass
+            class Dataclass:
+                args: typing.List[element_type] = field(
+                    default_factory=lambda: [],
+                    metadata={dataclass_cli.Options.POSSIBLE_VALUES: test_list},
+                )
+
+            testargs = [f"test.py", f"--{name}_args"]
+            testargs.extend(map(str, test_list))
+            with mock.patch("sys.argv", testargs):
+                dc = Dataclass()
+            self.assertEqual(test_list, dc.args)
+
+    def test_no_possible_values_list_arg(self):
+        testing_lists = [[1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        for idx, test_list in enumerate(testing_lists):
+
+            element_type = int if (len(test_list) == 0) else type(test_list[0])
+            name = f"dataclass_{idx}"
+
+            @self.add(name=name)
+            @dataclass
+            class Dataclass:
+                args: typing.List[element_type] = field(
+                    default_factory=lambda: [],
+                    metadata={dataclass_cli.Options.POSSIBLE_VALUES: test_list},
+                )
+
+            testargs = [f"test.py", f"--{name}_args"]
+            testargs.extend(map(str, test_list + ["10"]))
+            with mock.patch("sys.argv", testargs), self.assertRaises(
+                SystemExit
+            ), mock.patch("sys.stderr", new=StringIO()) as fake_out:
+                _ = Dataclass()
+            self.assertIn("invalid choice", fake_out.getvalue())
