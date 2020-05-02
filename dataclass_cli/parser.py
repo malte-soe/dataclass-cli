@@ -73,14 +73,6 @@ def _add(
     group = _parser.add_argument_group(name)
     for field in dataclasses.fields(cls):
         _add_argument_[field.type](group, field, name)
-        # group.add_argument(
-        #     f"--{name}_{field.name}",
-        #     type=field.type,
-        #     default=None if field.default is dataclasses.MISSING else field.default,
-        #     required=field.default is dataclasses.MISSING,
-        #     choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
-        #     help=field.metadata.get(Options.HELP_TEXT, None),
-        # )
 
     original_init = cls.__init__
 
