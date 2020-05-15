@@ -24,15 +24,22 @@ class TestDcCli(unittest.TestCase):
         class Dataclass:
             name: str
             number: int
+            flag: bool
 
         name = "Max"
         number = 1337
-        testargs = f"test.py --dataclass_name {name}\
-            --dataclass_number {number}".split()
+        flag = True
+        testargs = [
+            "test.py",
+            f"--dataclass_name={name}",
+            f"--dataclass_number={number}",
+            f"--dataclass_flag={flag}",
+        ]
         with mock.patch("sys.argv", testargs):
             parsed_dc = Dataclass()
-            self.assertEqual(parsed_dc.name, name)
-            self.assertEqual(parsed_dc.number, number)
+        self.assertEqual(parsed_dc.name, name)
+        self.assertEqual(parsed_dc.number, number)
+        self.assertEqual(parsed_dc.flag, flag)
 
     def test_multiple_dataclass_parsing(self):
         @self.add
@@ -162,7 +169,15 @@ class TestDcCli(unittest.TestCase):
         self.assertEqual(number, dc.number)
 
     def test_default_list_arg(self):
-        testing_lists = [[], [1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        testing_lists = [
+            [],
+            [1],
+            [1, 2],
+            ["a"],
+            ["a", "b"],
+            [0.5],
+            [0.5, 0.2],
+        ]
         for idx, test_list in enumerate(testing_lists):
 
             element_type = int if (len(test_list) == 0) else type(test_list[0])
@@ -180,7 +195,14 @@ class TestDcCli(unittest.TestCase):
             self.assertEqual(test_list, dc.args)
 
     def test_list_arg(self):
-        testing_lists = [[1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        testing_lists = [
+            [1],
+            [1, 2],
+            ["a"],
+            ["a", "b"],
+            [0.5],
+            [0.5, 0.2],
+        ]
         for idx, test_list in enumerate(testing_lists):
 
             element_type = int if (len(test_list) == 0) else type(test_list[0])
@@ -198,7 +220,14 @@ class TestDcCli(unittest.TestCase):
             self.assertEqual(test_list, dc.args)
 
     def test_possible_values_list_arg(self):
-        testing_lists = [[1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        testing_lists = [
+            [1],
+            [1, 2],
+            ["a"],
+            ["a", "b"],
+            [0.5],
+            [0.5, 0.2],
+        ]
         for idx, test_list in enumerate(testing_lists):
 
             element_type = int if (len(test_list) == 0) else type(test_list[0])
@@ -219,7 +248,14 @@ class TestDcCli(unittest.TestCase):
             self.assertEqual(test_list, dc.args)
 
     def test_no_possible_values_list_arg(self):
-        testing_lists = [[1], [1, 2], ["a"], ["a", "b"], [0.5], [0.5, 0.2]]
+        testing_lists = [
+            [1],
+            [1, 2],
+            ["a"],
+            ["a", "b"],
+            [0.5],
+            [0.5, 0.2],
+        ]
         for idx, test_list in enumerate(testing_lists):
 
             element_type = int if (len(test_list) == 0) else type(test_list[0])

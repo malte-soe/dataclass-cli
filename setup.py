@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dc-cli",
-    version="0.0.7",
+    version="0.0.8",
     author="Malte Soennichsen",
     author_email="malte-soe@users.noreply.github.com",
     description="Dataclass command line interface",

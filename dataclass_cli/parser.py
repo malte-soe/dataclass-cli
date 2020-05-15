@@ -50,6 +50,7 @@ _add_argument_: typing.Dict[
     int: _add_type_basic,
     float: _add_type_basic,
     str: _add_type_basic,
+    bool: _add_type_basic,
     typing.List[int]: _add_type_list,
     typing.List[float]: _add_type_list,
     typing.List[str]: _add_type_list,
