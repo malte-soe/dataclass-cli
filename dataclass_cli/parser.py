@@ -3,6 +3,7 @@ import dataclasses
 import enum
 import logging
 import typing
+from collections import defaultdict
 from functools import partial
 
 
@@ -30,6 +31,18 @@ def _add_type_basic(
     )
 
 
+def _add_type_bool(group: argparse._ArgumentGroup, field: dataclasses.Field, name: str):
+    destination = f"{name}_{field.name}"
+    bool_parser = group.add_mutually_exclusive_group(
+        required=field.default is dataclasses.MISSING
+    )
+    bool_parser.add_argument(f"--{destination}", dest=destination, action="store_true")
+    bool_parser.add_argument(
+        f"--no-{destination}", dest=destination, action="store_false"
+    )
+    bool_parser.set_defaults(**{destination: field.default})
+
+
 def _add_type_list(group: argparse._ArgumentGroup, field: dataclasses.Field, name: str):
     group.add_argument(
         f"--{name}_{field.name}",
@@ -46,15 +59,7 @@ def _add_type_list(group: argparse._ArgumentGroup, field: dataclasses.Field, nam
 
 _add_argument_: typing.Dict[
     type, typing.Callable[[argparse._ArgumentGroup, dataclasses.Field, str], None]
-] = {
-    int: _add_type_basic,
-    float: _add_type_basic,
-    str: _add_type_basic,
-    bool: _add_type_basic,
-    typing.List[int]: _add_type_list,
-    typing.List[float]: _add_type_list,
-    typing.List[str]: _add_type_list,
-}
+] = defaultdict(lambda: _add_type_basic, {bool: _add_type_bool, list: _add_type_list,})
 
 
 def _add(
@@ -73,7 +78,8 @@ def _add(
 
     group = _parser.add_argument_group(name)
     for field in dataclasses.fields(cls):
-        _add_argument_[field.type](group, field, name)
+        field_type = typing.get_origin(field.type) or field.type
+        _add_argument_[field_type](group, field, name)
 
     original_init = cls.__init__
 

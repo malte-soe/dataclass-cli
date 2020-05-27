@@ -25,21 +25,23 @@ class TestDcCli(unittest.TestCase):
             name: str
             number: int
             flag: bool
+            no_flag: bool
 
         name = "Max"
         number = 1337
-        flag = True
         testargs = [
             "test.py",
             f"--dataclass_name={name}",
             f"--dataclass_number={number}",
-            f"--dataclass_flag={flag}",
+            "--dataclass_flag",
+            "--no-dataclass_no_flag",
         ]
         with mock.patch("sys.argv", testargs):
             parsed_dc = Dataclass()
         self.assertEqual(parsed_dc.name, name)
         self.assertEqual(parsed_dc.number, number)
-        self.assertEqual(parsed_dc.flag, flag)
+        self.assertTrue(parsed_dc.flag)
+        self.assertFalse(parsed_dc.no_flag)
 
     def test_multiple_dataclass_parsing(self):
         @self.add
