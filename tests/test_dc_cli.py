@@ -119,7 +119,7 @@ class TestDcCli(unittest.TestCase):
                 default=1, metadata={dataclass_cli.Options.HELP_TEXT: help_text},
             )
 
-        testargs = f"test.py -h".split()
+        testargs = "test.py -h".split()
         with mock.patch("sys.argv", testargs), self.assertRaises(
             SystemExit
         ), mock.patch("sys.stdout", new=StringIO()) as fake_out:
@@ -133,7 +133,7 @@ class TestDcCli(unittest.TestCase):
         class DataclassWithNoDefault:
             number: int
 
-        testargs = f"test.py".split()
+        testargs = "test.py".split()
         with mock.patch("sys.argv", testargs), self.assertRaises(
             SystemExit
         ), mock.patch("sys.stderr", new=StringIO()) as fake_out:
@@ -191,7 +191,7 @@ class TestDcCli(unittest.TestCase):
                     default_factory=lambda: test_list
                 )
 
-            testargs = [f"test.py"]
+            testargs = ["test.py"]
             with mock.patch("sys.argv", testargs):
                 dc = Dataclass()
             self.assertEqual(test_list, dc.args)
@@ -215,7 +215,7 @@ class TestDcCli(unittest.TestCase):
             class Dataclass:
                 args: typing.List[element_type] = field(default_factory=lambda: [])
 
-            testargs = [f"test.py", f"--{name}_args"]
+            testargs = ["test.py", f"--{name}_args"]
             testargs.extend(map(str, test_list))
             with mock.patch("sys.argv", testargs):
                 dc = Dataclass()
@@ -243,7 +243,7 @@ class TestDcCli(unittest.TestCase):
                     metadata={dataclass_cli.Options.POSSIBLE_VALUES: test_list},
                 )
 
-            testargs = [f"test.py", f"--{name}_args"]
+            testargs = ["test.py", f"--{name}_args"]
             testargs.extend(map(str, test_list))
             with mock.patch("sys.argv", testargs):
                 dc = Dataclass()
@@ -271,7 +271,7 @@ class TestDcCli(unittest.TestCase):
                     metadata={dataclass_cli.Options.POSSIBLE_VALUES: test_list},
                 )
 
-            testargs = [f"test.py", f"--{name}_args"]
+            testargs = ["test.py", f"--{name}_args"]
             testargs.extend(map(str, test_list + ["10"]))
             with mock.patch("sys.argv", testargs), self.assertRaises(
                 SystemExit
