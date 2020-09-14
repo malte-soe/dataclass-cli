@@ -92,6 +92,26 @@ class TestDcCli(unittest.TestCase):
             _ = DataclassWithChoices()
         self.assertIn("invalid choice", fake_out.getvalue())
 
+    def test_ignore_value_option(self):
+        @self.add
+        @dataclass
+        class DataclassWithIgnoredValue:
+            number: int = field(
+                default=1, metadata={dataclass_cli.Options.IGNORE: True},
+            )
+
+        number = 0
+        testargs = f"test.py --dataclasswithignoredvalue_number {number}".split()
+        with mock.patch("sys.argv", testargs), self.assertRaises(SystemExit):
+            _ = DataclassWithIgnoredValue()
+
+        testargs = f"test.py --help".split()
+        with mock.patch("sys.argv", testargs), self.assertRaises(
+            SystemExit
+        ), mock.patch("sys.stderr", new=StringIO()) as fake_out:
+            _ = DataclassWithIgnoredValue()
+        self.assertNotIn("number", fake_out.getvalue())
+
     def test_possible_value_option(self):
         possible_values = [1, 2, 3]
 

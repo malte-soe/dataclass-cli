@@ -1,15 +1,15 @@
 import argparse
 import dataclasses
 import enum
-import logging
 import typing
 from collections import defaultdict
 from functools import partial
 
 
-class Options(str, enum.Enum):
-    POSSIBLE_VALUES = "possible_values"
-    HELP_TEXT = "help_text"
+class Options(enum.Enum):
+    POSSIBLE_VALUES = None
+    HELP_TEXT = None
+    IGNORE = False
 
 
 def add(cls=None, *, name=None, **kwargs):
@@ -26,8 +26,12 @@ def _add_type_basic(
         type=field.type,
         default=None if field.default is dataclasses.MISSING else field.default,
         required=field.default is dataclasses.MISSING,
-        choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
-        help=field.metadata.get(Options.HELP_TEXT, None),
+        choices=field.metadata.get(  # type: ignore
+            Options.POSSIBLE_VALUES, Options.POSSIBLE_VALUES.value
+        ),
+        help=field.metadata.get(
+            Options.HELP_TEXT, Options.HELP_TEXT.value
+        ),  # type: ignore
     )
 
 
@@ -51,8 +55,10 @@ def _add_type_list(group: argparse._ArgumentGroup, field: dataclasses.Field, nam
         if field.default_factory is dataclasses.MISSING  # type: ignore
         else field.default_factory(),  # type: ignore
         required=field.default_factory is dataclasses.MISSING,  # type: ignore
-        choices=field.metadata.get(Options.POSSIBLE_VALUES, None),
-        help=field.metadata.get(Options.HELP_TEXT, None),
+        choices=field.metadata.get(  # type: ignore
+            Options.POSSIBLE_VALUES, Options.POSSIBLE_VALUES.value
+        ),
+        help=field.metadata.get(Options.HELP_TEXT, Options.HELP_TEXT.value),  # type: ignore
         nargs="*",
     )
 
@@ -78,8 +84,9 @@ def _add(
 
     group = _parser.add_argument_group(name)
     for field in dataclasses.fields(cls):
-        field_type = typing.get_origin(field.type) or field.type
-        _add_argument_[field_type](group, field, name)
+        if not field.metadata.get(Options.IGNORE, Options.IGNORE.value):  # type: ignore
+            field_type = typing.get_origin(field.type) or field.type
+            _add_argument_[field_type](group, field, name)
 
     original_init = cls.__init__
 
